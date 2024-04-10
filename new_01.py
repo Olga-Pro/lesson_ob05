@@ -5,7 +5,7 @@ import random
 pygame.init()
 
 # Настройки игрового окна
-screen_width, screen_height = 300, 600
+screen_width, screen_height = 400, 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Настройки цветов
@@ -113,7 +113,7 @@ class Piece(object):
                     board[y_shape+yy][x_shape+xx] = self.color
                     #print(board[y_shape+yy])
 
-        
+
 
 def create_piece():
     return Piece(0, 0, random.choice(shapes))
