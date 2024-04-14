@@ -1,9 +1,6 @@
 import pygame
 import random
 
-# Инициализация pygame
-pygame.init()
-
 # Константы
 
 # Настройки игрового окна
@@ -108,20 +105,20 @@ class Board():
         # Инициализация игрового поля
         self.board = [[black for _ in range(COLUMNS)] for _ in range(ROWS)]
 
-    # Функция для отрисовки экрана и сетки
     def draw_board(self, surface):
+        # Функция для отрисовки экрана и сетки
         for y in range(ROWS):
             for x in range(COLUMNS):
                 rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(surface, self.board[y][x], rect)
                 pygame.draw.rect(surface, gray, rect, 1)
 
-    # Функция отрисовки одного квадратика из фигуры
     def draw_block(self, x, y, color, screen):
+        # Отрисовка одного квадратика из фигуры
         pygame.draw.rect(screen, color, (x, y, CELL_SIZE, CELL_SIZE))
 
-    # Функция отрисовки фигуры
     def draw_shape(self, x, y, piece, screen):
+        # Отрисовка фигуры
         for yy, row in enumerate(piece.shape):
             for xx, block in enumerate(row):
                 if block != 0:  # не рисовать пустые квадратики
@@ -136,7 +133,7 @@ class Board():
             self.board[0][j] = (0, 0, 0)
 
     def full_row(self):
-        # проверка заполненности строки и удаление заполненной
+        # проверка заполненности строки и удаление заполненной строки
         for yy, row in enumerate(self.board):
             res = 0
             for xx, block in enumerate(row):
@@ -160,24 +157,34 @@ class Game():
 def create_piece():
     return Piece(0, 0, random.choice(SHAPES))
 
-
-game = Game()
-# screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-# Настройки игровых параметров
-clock = pygame.time.Clock()
-fps = 5
-
-pygame.display.set_caption('Тетрис')
-# Основной игровой цикл
 def main():
-    # game = Game()
+    # Инициализация pygame
+    pygame.init()
+
+    clock = pygame.time.Clock()
+    fps = 5
+
+    pygame.display.set_caption('Тетрис')
+
+    # Создаем шрифт
+    font_size = 40
+    font = pygame.font.Font(None, font_size)
+
+    # Создаем текст
+    text = font.render('Игра окончена', True, white)
+    text_rect = text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
+
+    game = Game()
     # screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
     run = True
     current_piece = create_piece()
 
+    game_over = False
 
     while run:
+        # Основной игровой цикл
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -201,27 +208,30 @@ def main():
                     rotate_piece.rotate_shape()
                     if rotate_piece.valid_space(game.board, 0):
                         current_piece = rotate_piece
+        if not game_over:
+            game.board.draw_board(game.screen)
+            game.board.draw_shape(current_piece.x, current_piece.y, current_piece, game.screen)
+            game.board.full_row()
 
-        game.board.draw_board(game.screen)
-        game.board.draw_shape(current_piece.x, current_piece.y, current_piece, game.screen)
-        game.board.full_row()
+            if not current_piece.on_bottom() and current_piece.valid_space(game.board, 0):
+                # если не дно и есть пространство - едем вниз
+                current_piece.y += CELL_SIZE
+            else:
+                # сохраняем текущую фигуру
+                current_piece.save_on_board(game.board, current_piece.x, current_piece.y)
+                # запускаем следующую фигуру
+                current_piece = create_piece()
+                # проверить заполненность игрового поля
+                if not current_piece.valid_space(game.board, 0):
+                    # не хаватет места для новой фигуры -> конец игры
+                    game_over = True
 
-        if not current_piece.on_bottom() and current_piece.valid_space(game.board, 0):
-            # если не дно и есть пространство - едем вниз
-            current_piece.y += CELL_SIZE
         else:
-            current_piece.save_on_board(game.board, current_piece.x, current_piece.y)
-            current_piece = create_piece()
-            # проверить заполненность игрового поля
-            if not current_piece.valid_space(game.board, 0):
-                print("Игра окончена")
-                run = False
+            # Отображаем текст на экране
+            game.screen.blit(text, text_rect)
 
-        #print(f"{current_piece.x} - {current_piece.y}")
         pygame.display.flip()
         clock.tick(fps)
-
-        #current_piece.y += cell_size
 
     pygame.quit()
 
