@@ -42,7 +42,8 @@ SHAPES = [
      [7, 7]]
 ]
 
-class Piece(object):
+
+class Piece:
     # Класс для управления фигурами
     def __init__(self, column, row, shape):
         self.x = column
@@ -52,7 +53,7 @@ class Piece(object):
 
     def rotate_shape(self):
         # повернуть фигуру
-        self.shape = [ [self.shape[y][x] for y in range(len(self.shape))] for x in range(len(self.shape[0]) - 1, -1, -1) ]
+        self.shape = [[self.shape[y][x] for y in range(len(self.shape))] for x in range(len(self.shape[0]) - 1, -1, -1)]
 
     def on_bottom(self):
         # достигли дна?
@@ -99,7 +100,8 @@ class Piece(object):
                 if block != 0:  # не рисовать пустые квадратики
                     Board.board[y_shape+yy][x_shape+xx] = self.color
 
-class Board():
+
+class Board:
     # Класс игрового поля - все отрисовки
     def __init__(self):
         # Инициализация игрового поля
@@ -146,7 +148,8 @@ class Board():
         # для начала новой игры, после предыдущей - очистить матрицу
         self.board = [[(0, 0, 0) for _ in range(COLUMNS)] for _ in range(ROWS)]
 
-class Game():
+
+class Game:
     # Класс игры
     def __init__(self):
         self.board = Board()
@@ -170,6 +173,7 @@ class Game():
         text_rect = text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
 
         run = True
+        # Запуск первой фигуры
         current_piece = self.create_piece()
 
         game_over = False
@@ -180,18 +184,18 @@ class Game():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
-                if event.type == pygame.KEYDOWN:
+                if event.type == pygame.KEYDOWN:  # обработка нажатия клавиш
                     if event.key == pygame.K_ESCAPE:
                         run = False
                     elif event.key == pygame.K_LEFT:
                         # Переместить фигуру влево
-                        if not current_piece.on_left_board() and not current_piece.on_bottom() and current_piece.valid_space(
-                                self.board, -1):
+                        if (not current_piece.on_left_board() and not current_piece.on_bottom()
+                                and current_piece.valid_space(self.board, -1)):
                             current_piece.x -= CELL_SIZE
                     elif event.key == pygame.K_RIGHT:
                         # Переместить фигуру вправо
-                        if not current_piece.on_right_board() and not current_piece.on_bottom() and current_piece.valid_space(
-                                self.board, 1):
+                        if (not current_piece.on_right_board() and not current_piece.on_bottom()
+                                and current_piece.valid_space(self.board, 1)):
                             current_piece.x += CELL_SIZE
                     elif event.key == pygame.K_DOWN:
                         # Ускорить падение фигуры
@@ -204,11 +208,13 @@ class Game():
                         rotate_piece.rotate_shape()
                         if rotate_piece.valid_space(self.board, 0):
                             current_piece = rotate_piece
-
-
-                    #!!!!! Запуск новой игры - очистить матрицу
-                    #self.board.clean_board()
+                    elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+                        # Запуск новой игры - очистить матрицу и запустить новую фигуру
+                        self.board.clean_board()
+                        game_over = False
+                        current_piece = self.create_piece()
             if not game_over:
+                # Отрисовка
                 self.board.draw_board(self.screen)
                 self.board.draw_shape(current_piece.x, current_piece.y, current_piece, self.screen)
                 self.board.full_row()
@@ -234,7 +240,10 @@ class Game():
             clock.tick(fps)
 
         pygame.quit()
+
     def start(self):
+        # Запуск игры
+
         # Инициализация pygame
         pygame.init()
 
@@ -242,10 +251,9 @@ class Game():
         self.main_cycle()
 
 
-
 def main():
     game = Game()
     game.start()
 
-main()
 
+main()
