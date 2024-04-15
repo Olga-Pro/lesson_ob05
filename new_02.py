@@ -1,3 +1,4 @@
+# для сохранения истории реализации
 import pygame
 import random
 
@@ -18,6 +19,7 @@ white = (255, 255, 255)
 gray = (128, 128, 128)
 colors = [(0, 255, 255), (255, 165, 0), (0, 0, 255), (255, 255, 0),
           (128, 0, 128), (0, 255, 0), (255, 0, 0), gray]
+
 
 # Описываем формы фигур
 SHAPES = [
@@ -42,8 +44,7 @@ SHAPES = [
      [7, 7]]
 ]
 
-
-class Piece:
+class Piece(object):
     # Класс для управления фигурами
     def __init__(self, column, row, shape):
         self.x = column
@@ -53,7 +54,7 @@ class Piece:
 
     def rotate_shape(self):
         # повернуть фигуру
-        self.shape = [[self.shape[y][x] for y in range(len(self.shape))] for x in range(len(self.shape[0]) - 1, -1, -1)]
+        self.shape = [ [ self.shape[y][x] for y in range(len(self.shape)) ] for x in range(len(self.shape[0]) - 1, -1, -1) ]
 
     def on_bottom(self):
         # достигли дна?
@@ -100,8 +101,7 @@ class Piece:
                 if block != 0:  # не рисовать пустые квадратики
                     Board.board[y_shape+yy][x_shape+xx] = self.color
 
-
-class Board:
+class Board():
     # Класс игрового поля - все отрисовки
     def __init__(self):
         # Инициализация игрового поля
@@ -144,116 +144,100 @@ class Board:
             if res == COLUMNS:
                 self.remove_row(yy)
 
-    def clean_board(self):
-        # для начала новой игры, после предыдущей - очистить матрицу
-        self.board = [[(0, 0, 0) for _ in range(COLUMNS)] for _ in range(ROWS)]
 
-
-class Game:
+class Game():
     # Класс игры
     def __init__(self):
         self.board = Board()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
-    def create_piece(self):
-        # Генерация и запуск фигуры
-        return Piece(0, 0, random.choice(SHAPES))
-
-    def main_cycle(self):
-        # Настройки игровых параметров
-        clock = pygame.time.Clock()
-        fps = 5
-
-        # Создаем шрифт
-        font_size = 40
-        font = pygame.font.Font(None, font_size)
-
-        # Создаем текст для завершения игры
-        text = font.render('Игра окончена', True, white)
-        text_rect = text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
-
-        run = True
-        # Запуск первой фигуры
-        current_piece = self.create_piece()
-
-        game_over = False
-
-        while run:
-            # Основной игровой цикл
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    run = False
-                if event.type == pygame.KEYDOWN:  # обработка нажатия клавиш
-                    if event.key == pygame.K_ESCAPE:
-                        run = False
-                    elif event.key == pygame.K_LEFT:
-                        # Переместить фигуру влево
-                        if (not current_piece.on_left_board() and not current_piece.on_bottom()
-                                and current_piece.valid_space(self.board, -1)):
-                            current_piece.x -= CELL_SIZE
-                    elif event.key == pygame.K_RIGHT:
-                        # Переместить фигуру вправо
-                        if (not current_piece.on_right_board() and not current_piece.on_bottom()
-                                and current_piece.valid_space(self.board, 1)):
-                            current_piece.x += CELL_SIZE
-                    elif event.key == pygame.K_DOWN:
-                        # Ускорить падение фигуры
-                        while current_piece.valid_space(self.board, 0) and not current_piece.on_bottom():
-                            # пока есть пространство - двигаем вниз
-                            current_piece.y += CELL_SIZE
-                    elif event.key == pygame.K_UP:
-                        # Повернуть фигуру
-                        rotate_piece = current_piece
-                        rotate_piece.rotate_shape()
-                        if rotate_piece.valid_space(self.board, 0):
-                            current_piece = rotate_piece
-                    elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
-                        # Запуск новой игры - очистить матрицу и запустить новую фигуру
-                        self.board.clean_board()
-                        game_over = False
-                        current_piece = self.create_piece()
-            if not game_over:
-                # Отрисовка
-                self.board.draw_board(self.screen)
-                self.board.draw_shape(current_piece.x, current_piece.y, current_piece, self.screen)
-                self.board.full_row()
-
-                if not current_piece.on_bottom() and current_piece.valid_space(self.board, 0):
-                    # если не дно и есть пространство - едем вниз
-                    current_piece.y += CELL_SIZE
-                else:
-                    # сохраняем текущую фигуру
-                    current_piece.save_on_board(self.board, current_piece.x, current_piece.y)
-                    # запускаем следующую фигуру
-                    current_piece = self.create_piece()
-                    # проверить заполненность игрового поля
-                    if not current_piece.valid_space(self.board, 0):
-                        # не хаватет места для новой фигуры -> конец игры
-                        game_over = True
-
-            else:
-                # Отображаем текст на экране
-                self.screen.blit(text, text_rect)
-
-            pygame.display.flip()
-            clock.tick(fps)
-
-        pygame.quit()
-
     def start(self):
-        # Запуск игры
+        pass
 
-        # Инициализация pygame
-        pygame.init()
 
-        pygame.display.set_caption('Тетрис')
-        self.main_cycle()
 
+
+
+def create_piece():
+    return Piece(0, 0, random.choice(SHAPES))
 
 def main():
+    # Инициализация pygame
+    pygame.init()
+
+    clock = pygame.time.Clock()
+    fps = 5
+
+    pygame.display.set_caption('Тетрис')
+
+    # Создаем шрифт
+    font_size = 40
+    font = pygame.font.Font(None, font_size)
+
+    # Создаем текст
+    text = font.render('Игра окончена', True, white)
+    text_rect = text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
+
     game = Game()
-    game.start()
+    # screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    run = True
+    current_piece = create_piece()
+
+    game_over = False
+
+    while run:
+        # Основной игровой цикл
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    # Переместить фигуру влево
+                    if not current_piece.on_left_board() and not current_piece.on_bottom() and current_piece.valid_space(game.board, -1):
+                        current_piece.x -= CELL_SIZE
+                elif event.key == pygame.K_RIGHT:
+                    # Переместить фигуру вправо
+                    if not current_piece.on_right_board() and not current_piece.on_bottom() and current_piece.valid_space(game.board, 1):
+                        current_piece.x += CELL_SIZE
+                elif event.key == pygame.K_DOWN:
+                    # Ускорить падение фигуры
+                    while current_piece.valid_space(game.board, 0) and not current_piece.on_bottom():
+                        # пока есть пространство - двигаем вниз
+                        current_piece.y += CELL_SIZE
+                elif event.key == pygame.K_UP:
+                    # Повернуть фигуру
+                    rotate_piece = current_piece
+                    rotate_piece.rotate_shape()
+                    if rotate_piece.valid_space(game.board, 0):
+                        current_piece = rotate_piece
+        if not game_over:
+            game.board.draw_board(game.screen)
+            game.board.draw_shape(current_piece.x, current_piece.y, current_piece, game.screen)
+            game.board.full_row()
+
+            if not current_piece.on_bottom() and current_piece.valid_space(game.board, 0):
+                # если не дно и есть пространство - едем вниз
+                current_piece.y += CELL_SIZE
+            else:
+                # сохраняем текущую фигуру
+                current_piece.save_on_board(game.board, current_piece.x, current_piece.y)
+                # запускаем следующую фигуру
+                current_piece = create_piece()
+                # проверить заполненность игрового поля
+                if not current_piece.valid_space(game.board, 0):
+                    # не хаватет места для новой фигуры -> конец игры
+                    game_over = True
+
+        else:
+            # Отображаем текст на экране
+            game.screen.blit(text, text_rect)
+
+        pygame.display.flip()
+        clock.tick(fps)
+
+    pygame.quit()
 
 
 main()
+
