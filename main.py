@@ -1,3 +1,5 @@
+# Тетрис
+
 import pygame
 import random
 
